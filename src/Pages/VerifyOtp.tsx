@@ -1,27 +1,46 @@
-import { useState } from "react";
+import { useState, ChangeEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "../axios";
-import { useUserContext } from "../Hooks/useUserContext";
+
+// Define the type for the location state
+interface LocationState {
+  telegram_id: string;
+  username: string;
+}
+
+interface ErrorResponse {
+  response: {
+    data: {
+      info?: string;
+    };
+  };
+}
 
 function SendOtp() {
-  const { dispatch } = useUserContext();
   const location = useLocation();
   const navigate = useNavigate();
-  const { telegram_id, username } = location.state || {};
-  const [otp, setOtp] = useState(new Array(6).fill(""));
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleChange = (element, index) => {
-    if (isNaN(element.value)) return;
+  // Extracting telegram_id and username from location.state
+  const { telegram_id, username }: LocationState = location.state || {};
+
+  const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // Handle OTP input change
+  const handleChange = (element: HTMLInputElement, index: number): void => {
+    if (isNaN(Number(element.value))) return; // Ensure only numbers are entered
     const newOtp = [...otp];
     newOtp[index] = element.value;
     setOtp(newOtp);
 
-    // Move focus to next input
-    if (element.nextSibling) element.nextSibling.focus();
+    // Move focus to the next input
+    if (element.nextSibling) {
+      (element.nextSibling as HTMLInputElement).focus();
+    }
   };
 
-  const sendOtp = async () => {
+  // Send OTP function
+  const sendOtp = async (): Promise<void> => {
     try {
       setIsSubmitting(true);
       await axios.post("/send-otp", { telegram_id: telegram_id });
@@ -32,7 +51,8 @@ function SendOtp() {
     }
   };
 
-  const verifyOtp = async () => {
+  // Verify OTP function
+  const verifyOtp = async (): Promise<void> => {
     try {
       setIsSubmitting(true);
       const otpString = otp.join("");
@@ -40,26 +60,31 @@ function SendOtp() {
         telegram_id: telegram_id,
         otp: otpString,
       });
+
       if (res.data.success) {
-        dispatch({ type: "LOGIN", payload:  res.data.user });
+        localStorage.setItem("user", JSON.stringify(res.data.user));
         alert(res.data.success);
         navigate("/");
-      }
-      if (res.data.info) {
+      } 
+    } catch (error) {
+      console.log(error);
+
+      const err = error as ErrorResponse;
+      if (err?.response?.data?.info) {
         navigate("/set-details", {
           state: {
             telegram_id: telegram_id,
             username: username,
           },
         });
+      } else {
+        alert("An unexpected error occurred.");
       }
-    } catch (error) {
-      console.log(error);
-      alert(error);
     } finally {
       setIsSubmitting(false);
     }
   };
+
   return (
     <div className="bg-black text-white border border-gray-100 p-8 max-w-lg mx-auto rounded-lg shadow-lg">
       <h1 className="text-4xl font-bold text-center mb-4">OTP Verification</h1>
@@ -67,9 +92,7 @@ function SendOtp() {
         Complete the Onestep verification to proceed. It is important for
         account verification.
       </p>
-      <p className="text-center mb-6">
-        Enter the OTP verification code sent to you
-      </p>
+      <p className="text-center mb-6">Enter the OTP verification code sent to you</p>
 
       <p className="text-center text-lg mb-6">10 Minutes</p>
 
@@ -81,8 +104,12 @@ function SendOtp() {
             maxLength="1"
             key={index}
             value={data}
-            onChange={(e) => handleChange(e.target, index)}
-            onFocus={(e) => e.target.select()}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              handleChange(e.target, index)
+            }
+            onFocus={(e: React.FocusEvent<HTMLInputElement>) =>
+              e.target.select()
+            }
             className="w-14 h-14 text-center text-2xl bg-gray-800 text-white rounded-md outline-none focus:ring-2 focus:ring-[#72692a]"
           />
         ))}

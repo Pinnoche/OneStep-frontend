@@ -1,16 +1,30 @@
-import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
-import AccountSetup from "./AcoountSetUp";
-import PasscodeSetup from "./Passcodesetup";
+import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import AccountSetup from "../components/AcoountSetUp";
+import PasscodeSetup from "../components/PasscodeSetup";
 import axios from '../axios'
 
-function SetupForm() {
-  const location =useLocation();
-    const { username, telegram_id } = location.state || { }
-  const [step, setStep] = useState(1);
+interface LocationState {
+  username: string;
+  telegram_id: string;
+}
 
-  
-  const [formData, setFormData] = useState({
+interface FormData {
+  username: string;
+  telegram_id: string;
+  dob: string;
+  phone_number: string;
+  referralCode: string;
+  passcode: string;
+}
+
+function SetupForm() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { username, telegram_id }: LocationState = location.state || { username: "", telegram_id: "" };
+
+  const [step, setStep] = useState<number>(1);
+  const [formData, setFormData] = useState<FormData>({
     username: "",
     telegram_id: telegram_id,
     dob: "",
@@ -19,26 +33,25 @@ function SetupForm() {
     passcode: "",
   });
 
-  // Update state for Account Setup
-  const handleAccountSetup = (data) => {
+
+  const handleAccountSetup = (data: Partial<FormData>) => {
     setFormData((prevData) => ({ ...prevData, ...data }));
     setStep(2); 
   };
 
-  // Update state for Passcode Setup
-  const handlePasscodeSetup = (passcode) => {
+  const handlePasscodeSetup = (passcode: string) => {
     setFormData((prevData) => ({ ...prevData, passcode }));
     submitData(); 
   };
 
-  // Submit data to endpoint
   const submitData = async () => {
     try {
-      const response = await axios("/register", formData);
-
-      const result = await response.data;
+      const response = await axios.post("/register", formData);
+      const result = response.data;
       console.log("Success:", result);
-      alert("Account created successfully!");
+      alert(result.success);
+      localStorage.setItem('user', JSON.stringify(result.user));
+      navigate('/');
     } catch (error) {
       console.error("Error:", error);
       alert("There was an error submitting your data.");
@@ -47,7 +60,7 @@ function SetupForm() {
 
   return (
     <div>
-      {step === 1 && <AccountSetup onNext={handleAccountSetup} username= {username} />}
+      {step === 1 && <AccountSetup onNext={handleAccountSetup} username={username} />}
       {step === 2 && <PasscodeSetup onSubmit={handlePasscodeSetup} />}
 
       <div className="flex justify-center mt-4">

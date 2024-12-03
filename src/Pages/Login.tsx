@@ -13,7 +13,7 @@ function Login() {
     script.async = true;
     script.setAttribute("data-telegram-login", tGBot);
     script.setAttribute("data-size", "large");
-    script.setAttribute("data-auth-url", "http://localhost:5173/send-otp");
+    script.setAttribute("data-auth-url", "https://df94-197-211-58-163.ngrok-free.app/send-otp");
     script.setAttribute("data-request-access", "write");
     document.getElementById("telegram-login-container").appendChild(script);
   }, [tGBot]);

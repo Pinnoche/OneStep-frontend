@@ -1,11 +1,16 @@
-import { useState } from "react";
+import React, { useState, ChangeEvent } from "react";
 
-function PasscodeSetup({ onSubmit }) {
-  const [passcode, setPasscode] = useState(Array(6).fill(""));
-  const [confirmPasscode, setConfirmPasscode] = useState(Array(6).fill(""));
+// Define the type for the props
+interface PasscodeSetupProps {
+  onSubmit: (passcode: string) => void;
+}
+
+function PasscodeSetup({ onSubmit }: PasscodeSetupProps) {
+  const [passcode, setPasscode] = useState<string[]>(Array(6).fill(""));
+  const [confirmPasscode, setConfirmPasscode] = useState<string[]>(Array(6).fill(""));
 
   // Handle passcode change
-  const handleInputChange = (e, index , type) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>, index: number, type: "passcode" | "confirmPasscode") => {
     const value = e.target.value;
     if (/^\d?$/.test(value)) {
       // Update either passcode or confirmPasscode
@@ -19,12 +24,12 @@ function PasscodeSetup({ onSubmit }) {
 
       // Move focus to next input
       if (value && index < 5) {
-        document.getElementById(`${type}-${index + 1}`).focus();
+        document.getElementById(`${type}-${index + 1}`)?.focus();
       }
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const passcodeString = passcode.join("");
     const confirmPasscodeString = confirmPasscode.join("");

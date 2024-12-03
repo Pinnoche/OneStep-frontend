@@ -1,23 +1,39 @@
-import { useState } from "react";
+import { useState, ChangeEvent, FormEvent } from "react";
 
-function AccountSetup({onNext, username}) {
-    
-    const [data, setData] = useState({
-      username: "",
-      dateOfBirth: "",
-      phoneNumber: "",
-      referralCode: "",
-    });
+// Define types for props
+interface AccountSetupProps {
+  onNext: (data: AccountData) => void; // onNext expects a function that receives `data` and doesn't return anything
+  username?: string; // Optional username prop
+}
 
-    const handleChange = (e) => {
-      const { name, value } = e.target;
-      setData((prev) => ({ ...prev, [name]: value }));
-    };
+// Define the structure of `data` state
+interface AccountData {
+  username: string;
+  dob: string;
+  phone_number: string;
+  referralCode: string;
+}
 
-    const handleSubmit = (e) => {
-      e.preventDefault();
-      onNext(data);
-    };
+function AccountSetup({ onNext, username }: AccountSetupProps) {
+  // Define state with the correct type
+  const [data, setData] = useState<AccountData>({
+    username: "",
+    dob: "",
+    phone_number: "",
+    referralCode: "",
+  });
+
+  // Handle change for form inputs
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    onNext(data); 
+  };
+
   return (
     <div className="min-h-screen flex justify-center items-center bg-black text-white">
       <div className="max-w-md w-full bg-gray-900 p-8 rounded-lg shadow-lg">
@@ -50,9 +66,11 @@ function AccountSetup({onNext, username}) {
             <input
               type="text"
               id="username"
+              name="username"
+              value={data.username}
               className="w-full p-3 bg-gray-800 rounded-md text-white outline-none focus:ring-2 focus:ring-yellow-500"
               placeholder={username ? username : "Enter your Username"}
-              disabled = {Boolean(username)}
+              // disabled={Boolean(username)}
               onChange={handleChange}
             />
             <p className="text-sm text-gray-500 mt-1">Must be up to 8 characters and unique</p>
@@ -66,6 +84,7 @@ function AccountSetup({onNext, username}) {
             <input
               type="date"
               id="dob"
+              name="dob"
               value={data.dob}
               onChange={handleChange}
               className="w-full p-3 bg-gray-800 rounded-md text-white outline-none focus:ring-2 focus:ring-yellow-500"
@@ -82,6 +101,7 @@ function AccountSetup({onNext, username}) {
               <input
                 type="tel"
                 id="phone"
+                name="phone_number"
                 value={data.phone_number}
                 onChange={handleChange}
                 className="flex-1 p-3 bg-gray-800 text-white outline-none focus:ring-2 focus:ring-yellow-500 rounded-md"
@@ -99,7 +119,9 @@ function AccountSetup({onNext, username}) {
               <input
                 type="text"
                 id="referral"
+                name="referralCode"
                 value={data.referralCode}
+                onChange={handleChange}
                 className="w-full p-3 bg-gray-800 rounded-md text-white outline-none focus:ring-2 focus:ring-yellow-500"
                 placeholder="Enter referral code"
               />
