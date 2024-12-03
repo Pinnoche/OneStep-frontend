@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "../axios";
+import { useUserContext } from "../Hooks/useUserContext";
 
 function SendOtp() {
+  const { dispatch } = useUserContext();
   const location = useLocation();
   const navigate = useNavigate();
   const { telegram_id, username } = location.state || {};
@@ -39,6 +41,7 @@ function SendOtp() {
         otp: otpString,
       });
       if (res.data.success) {
+        dispatch({ type: "LOGIN", payload:  res.data.user });
         alert(res.data.success);
         navigate("/");
       }
