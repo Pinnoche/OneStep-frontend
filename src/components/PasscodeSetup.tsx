@@ -35,7 +35,7 @@ function PasscodeSetup({ onSubmit }: PasscodeSetupProps) {
     const confirmPasscodeString = confirmPasscode.join("");
 
     if (passcodeString.length === 6 && passcodeString === confirmPasscodeString) {
-      onSubmit(passcodeString); // Pass validated passcode to parent
+      onSubmit(passcodeString);
     } else if (passcodeString !== confirmPasscodeString) {
       alert("Passcodes do not match. Please try again.");
     } else {
